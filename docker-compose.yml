@@ -1,0 +1,45 @@
+version: '3.4'
+services:
+  nginx:
+    build:
+      context: .
+      dockerfile: ./docker/nginx.Dockerfile
+    depends_on:
+      - php
+    ports:
+      - "80:80"
+      - "8080:8080"
+    volumes:
+      - ./app:/app
+      - ./logs/nginx:/var/log/nginx
+    networks:
+      - payment
+  mysql:
+    image: mysql:8.0
+    command: --default-authentication-plugin=mysql_native_password
+    volumes:
+      - ./data/mysql/lib:/var/lib/mysql #бд
+    environment:
+      - MYSQL_ROOT_PASSWORD=${MYSQL_ROOT_PASSWORD}
+      - MYSQL_DATABASE=${MYSQL_DATABASE}
+      - MYSQL_USER=${MYSQL_USER}
+      - MYSQL_PASSWORD=${MYSQL_PASSWORD}
+    networks:
+      - payment
+    ports:
+    - "3306:3306"
+  php:
+    build:
+      context: .
+      dockerfile: ./docker/php.Dockerfile
+    depends_on:
+      - mysql
+    volumes:
+      - ./app:/app
+    networks:
+      - payment
+    environment:
+      PHP_XDEBUG_ENABLED: 1
+networks:
+  payment:
+    driver: bridge

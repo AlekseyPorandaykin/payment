@@ -1,0 +1,97 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Страница с отчётом{% endblock %}
+
+{% block body %}
+    <br>
+    <form method="GET">
+        <div class="row g-3 needs-validation">
+            <div class="col-sm-7">
+                <input type="text" name="client" class="form-control" placeholder="Клиент guid" aria-label="Client"
+                       required {% if client %} value="{{ client }}" {% endif %}>
+            </div>
+            <div class="col-sm">
+                <input type="text" class="form-control datepicker" name="date_from" placeholder="Начало периода"
+                        {% if date_from %} value="{{ date_from }}" {% endif %}
+                >
+            </div>
+            <div class="col-sm">
+                <input type="text" class="form-control datepicker" name="date_to" placeholder="Конец периода"
+                        {% if date_to %} value="{{ date_to }}" {% endif %}
+                >
+            </div>
+            <div class="col-sm">
+                <button type="submit" class="btn btn-primary">Сформировать</button>
+            </div>
+        </div>
+    </form>
+    <br>
+    {% if error_message %}
+        <div class="alert alert-danger" role="alert">
+            {{ error_message }}
+        </div>
+    {% endif %}
+    {% if report is not null %}
+        <div class="alert alert-primary" role="alert">
+            <p>Найдено всего записей: {{ report.getRecordCollection.getCountRecords }}</p>
+            <h6>Отчёты для скачивания</h6>
+            <p><a href="/files/{{ report.getUrlToCsvReport }}" target="_blank">Скачать csv отчёт</a></p>
+            <p><a href="/files/{{ report.getUrlToXmlReport }}" target="_blank">Скачать xml отчёт</a><br></p>
+            <h6>Общая сумма операций в валюте:</h6>
+            {% for currency, amount in report.getTotalAmountCollection.toArray %}
+                <p>{{ currency }} - {{ amount }}</p>
+            {% endfor %}
+        </div>
+        {% if total_page > 1 %}
+            <nav aria-label="Page navigation example">
+                <ul class="pagination justify-content-end">
+                    {% if current_page > 1 %}
+                        <li class="page-item">
+                            <a class="page-link" href="/{{ 1 }}/?{{ uri }}" tabindex="-1" aria-disabled="true">First</a>
+                        </li>
+                    {% endif %}
+                    {% if (current_page - 1) > 0 %}
+                        <li class="page-item"><a class="page-link" href="/{{ current_page - 1 }}/?{{ uri }}">{{ current_page - 1 }}</a></li>
+                    {% endif %}
+                    <li class="page-item active"><a class="page-link" href="#">{{ current_page }}</a></li>
+
+                    {% if (current_page + 1) < total_page %}
+                        <li class="page-item"><a class="page-link" href="/{{ current_page + 1 }}/?{{ uri }}">{{ current_page + 1 }}</a></li>
+                    {% endif %}
+                    {% if current_page < total_page %}
+                        <li class="page-item">
+                            <a class="page-link" href="/{{ total_page }}/?{{ uri }}" tabindex="-1" aria-disabled="true">Last</a>
+                        </li>
+                    {% endif %}
+                    <li></li>
+                </ul>
+            </nav>
+        {% endif %}
+        <table class="table">
+            <thead>
+            <tr>
+                {% for nameColumn in report.getRecordCollection.getColumnNames %}
+                    <th scope="col">{{ nameColumn }}</th>
+                {% endfor %}
+            </tr>
+            </thead>
+            <tbody>
+            {% for record in report.getRecordCollection.getPartOfRecords(current_page) %}
+                <tr>
+                    {% for value in record %}
+                        <td>{{ value }}</td>
+                    {% endfor %}
+                </tr>
+            {% endfor %}
+            </tbody>
+        </table>
+    {% endif %}
+{% endblock %}
+
+{% block javascript %}
+<script>
+    window.jQuery('.datepicker').datepicker({
+    format: 'yyyy-mm-dd'
+});
+</script>
+{% endblock javascript %}

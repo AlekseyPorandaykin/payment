@@ -1,0 +1,38 @@
+index:
+    path: /{page}
+    controller: App\Controller\IndexController
+    methods: GET
+    defaults:
+      page: 1
+
+#API
+
+#Регистрация клиента
+registreation_client:
+  path: /api/registration
+  controller: App\Controller\Api\CreateClientController
+  methods: POST
+
+#Загрузка новой валюты
+load_currency:
+  path: /api/currency/create
+  controller: App\Controller\Api\CreateCurrencyController
+  methods: POST
+
+#Зачисление денежных средств на кошелёк клиента
+deposit_money:
+  path: /api/money/deposit
+  controller: App\Controller\Api\DepositMoneyController
+  methods: POST
+
+#Загрузка котировки валюты к USD на дату
+load_exchange_rate:
+  path: /api/exchange/load
+  controller: App\Controller\Api\LoadExchangeRateController
+  methods: POST
+
+#Перевод денежных средств от одного клиента другому
+payment_transfer:
+  path: /api/money/transfer
+  controller: App\Controller\Api\TransferMoneyController
+  methods: POST
