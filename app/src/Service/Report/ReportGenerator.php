@@ -31,18 +31,18 @@ class ReportGenerator
     /**
      * @var FileReportGenerator
      */
-    private FileReportGenerator $csvFileReportGenerator;
+    private FileReportGenerator $fileReportGenerator;
 
     public function __construct(
         HistoryWalletRepository $historyWalletRepository,
         ClientRepository $clientRepository,
         DateTimeHelper $dateTimeHelper,
-        FileReportGenerator $csvFileReportGenerator
+        FileReportGenerator $fileReportGenerator
     ) {
         $this->historyWalletRepository = $historyWalletRepository;
         $this->clientRepository = $clientRepository;
         $this->dateTimeHelper = $dateTimeHelper;
-        $this->csvFileReportGenerator = $csvFileReportGenerator;
+        $this->fileReportGenerator = $fileReportGenerator;
     }
 
     /**
@@ -64,7 +64,10 @@ class ReportGenerator
         $dateTimeFrom = $this->dateTimeHelper->validateFormatDateString($dateTimeFromStr)
             ? $this->dateTimeHelper->createDateWithoutTime($dateTimeFromStr)
             : $this->dateTimeHelper->createFirstDateString();
-        $dateTimeTo = $this->dateTimeHelper->validateFormatDateString($dateTimeToStr)
+        $dateTimeTo = (
+            $this->dateTimeHelper->validateFormatDateString($dateTimeToStr)
+            && $this->dateTimeHelper->isPastDay($dateTimeToStr)
+        )
             ? $this->dateTimeHelper->createDateWithoutMaxTime($dateTimeToStr)
             : $this->dateTimeHelper->createCurrentDate();
 
@@ -76,20 +79,24 @@ class ReportGenerator
             $dateTimeTo->format(DateTimeHelper::DATETIME_FORMAT_TOGETHER_STR)
         );
         #Если существует отчёт сохранённый в системе, то данные получаем из файла
-        if ($this->csvFileReportGenerator->issetByKey($keyReport)) {
+        if (
+            ($csvFile = $this->fileReportGenerator->getPathToExistingCsvByKey($keyReport))
+            && ($xmlFile = $this->fileReportGenerator->getPathToExistingXmlByKey($keyReport))
+        ) {
             $data = $this->getDataFromFile($keyReport);
         } else {
             $data = $this->historyWalletRepository->getRecordByParams($client->getGuid(), $dateTimeFrom, $dateTimeTo);
             if (count($data) === 0) {
                 throw new ApplicationException('Данные не найдены');
             }
-            $this->csvFileReportGenerator->generate($keyReport, $data);
+            $csvFile = $this->fileReportGenerator->generateCsv($keyReport, $data);
+            $xmlFile = $this->fileReportGenerator->generateXml($keyReport);
         }
         $totalAmount = $this->calculateTotalAmount($data);
 
         return new ReportDto(
-            "{$keyReport}.csv",
-            "{$keyReport}.xml",
+            $csvFile,
+            $xmlFile,
             $totalAmount,
             new RecordCollection($data)
         );
@@ -104,7 +111,7 @@ class ReportGenerator
      */
     private function getDataFromFile(string $key): array
     {
-        return \iterator_to_array($this->csvFileReportGenerator->getDataFromFile($key));
+        return \iterator_to_array($this->fileReportGenerator->getDataFromFile($key));
     }
 
     /**

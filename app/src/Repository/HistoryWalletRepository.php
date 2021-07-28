@@ -70,6 +70,7 @@ class HistoryWalletRepository extends AbstractRepository
             $queryBuilder->andWhere('history.createdAt <= :dateTimeTo')
                 ->setParameter('dateTimeTo', $dateTimeTo->format(DateTimeHelper::DATETIME_FORMAT_STR));
         }
+        $queryBuilder->orderBy('history.createdAt', 'DESC');
         $queryBuilder->getQuery()->getArrayResult();
 
         return $queryBuilder->getQuery()->getArrayResult();

@@ -22,7 +22,7 @@ class TransferMoneyParamsValidate implements ValidationInterface
         }
         if (!(new GenericValidator())->validate($clientFrom)) {
             throw new ValidationException(
-                'Для зачисления денежных средств, необходимо передать корректный client_from'
+                'Для перевода денежных средств, необходимо передать корректный client_from'
             );
         }
         $clientTo = $data['client_to'] ?? null;
@@ -33,12 +33,14 @@ class TransferMoneyParamsValidate implements ValidationInterface
         }
         if (!(new GenericValidator())->validate($clientTo)) {
             throw new ValidationException(
-                'Для зачисления денежных средств, необходимо передать корректный client_to'
+                'Для перевода денежных средств, необходимо передать корректный client_to'
             );
         }
         $currencyCode = $data['currency_code'] ?? null;
         if ($currencyCode === null) {
-            throw new ValidationException('Для зачисления денежных средств, необходимо передать параметр currency_code');
+            throw new ValidationException(
+                'Для перевода денежных средств, необходимо передать параметр currency_code'
+            );
         }
         if (empty($currencyCode)) {
             throw new ValidationException('Код валюты не должен быть пустым');
@@ -46,7 +48,7 @@ class TransferMoneyParamsValidate implements ValidationInterface
         $amount = $data['amount'] ?? null;
         if ($amount === null) {
             throw new ValidationException(
-                'Для зачисления денежных средств, необходимо передать параметр amount'
+                'Для перевода денежных средств, необходимо передать параметр amount'
             );
         }
         if (!is_numeric($amount)) {

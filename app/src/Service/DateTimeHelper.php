@@ -90,4 +90,18 @@ class DateTimeHelper
     {
         return $this->createDateWithoutTime(self::FIRST_DAY_STR);
     }
+
+    /**
+     * Этот день уже прошёл?
+     *
+     * @param string $dateStr
+     * @return bool
+     */
+    public function isPastDay(string $dateStr): bool
+    {
+        $day = (int)$this->createDateWithoutTime($dateStr)->format('d');
+        $currentDay = (int)$this->createCurrentDateWithoutTime()->format('d');
+
+        return $day < $currentDay;
+    }
 }

@@ -23,16 +23,14 @@ class FileReportGenerator
         $this->projectDirFiles = $projectDirFiles;
     }
 
-    /**
-     * Проверка существования отчётов в проекте
-     *
-     * @param string $key
-     * @return bool
-     */
-    public function issetByKey(string $key): bool
+    public function getPathToExistingCsvByKey(string $key): ?string
     {
-        return \file_exists($this->generatePath($key, 'csv'))
-            && \file_exists($this->generatePath($key, 'xml'));
+        return \file_exists($this->generatePath($key, 'csv')) ? $key . '.csv' : null;
+    }
+
+    public function getPathToExistingXmlByKey(string $key): ?string
+    {
+        return \file_exists($this->generatePath($key, 'xml')) ? $key . '.xml' : null;
     }
 
     /**
@@ -46,8 +44,8 @@ class FileReportGenerator
     public function generate(string $key, array $data): void
     {
         try {
-            $this->writeDataToCsv($key, $data);
-            $this->writeDataToXml($key);
+            $this->generateCsv($key, $data);
+            $this->generateXml($key);
         } catch (\Throwable $e) {
             throw new ApplicationException("Ошибка записи в файл({$e->getMessage()})");
         }
@@ -84,24 +82,28 @@ class FileReportGenerator
      *
      * @param string $key
      * @param array  $data
+     * @return string
      * @throws CannotInsertRecord
      */
-    private function writeDataToCsv(string $key, array $data): void
+    public function generateCsv(string $key, array $data): string
     {
         $fileName = $this->generatePath($key);
         $writer = Writer::createFromPath($fileName, 'w+');
         $keys = array_keys($data[0]);
         $writer->insertOne($keys);
         $writer->insertAll($data);
+
+        return $key . '.csv';
     }
 
     /**
      * Формируем отчёт в виде xml файла
      *
      * @param $key
+     * @return string
      * @throws \League\Csv\Exception
      */
-    private function writeDataToXml(string $key): void
+    public function generateXml(string $key): string
     {
         $csv = Reader::createFromPath($this->generatePath($key), 'r');
         $csv->setHeaderOffset(0);
@@ -115,5 +117,7 @@ class FileReportGenerator
         $dom->formatOutput = true;
         $dom->encoding = 'iso-8859-15';
         file_put_contents($this->generatePath($key, 'xml'), $dom->saveXML());
+
+        return $key . '.xml';
     }
 }
