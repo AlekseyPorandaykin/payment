@@ -28,7 +28,7 @@ class DateTimeHelper
         return \DateTime::createFromFormat(self::DATE_FORMAT_STR, $date)->setTime(0, 0, 0, 0);
     }
 
-    public function createDateWithoutMaxTime(string $date): \DateTime
+    public function createDateWithMaxTime(string $date): \DateTime
     {
         return \DateTime::createFromFormat(self::DATE_FORMAT_STR, $date)->setTime(23, 59, 59, 59);
     }

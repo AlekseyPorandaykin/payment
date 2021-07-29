@@ -68,7 +68,7 @@ class ReportGenerator
             $this->dateTimeHelper->validateFormatDateString($dateTimeToStr)
             && $this->dateTimeHelper->isPastDay($dateTimeToStr)
         )
-            ? $this->dateTimeHelper->createDateWithoutMaxTime($dateTimeToStr)
+            ? $this->dateTimeHelper->createDateWithMaxTime($dateTimeToStr)
             : $this->dateTimeHelper->createCurrentDate();
 
         #Уникальное название отчёта
